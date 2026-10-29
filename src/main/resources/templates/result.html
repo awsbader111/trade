@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Exchange rates result</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 900px;
+            margin: 30px auto;
+            padding: 0 16px;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 360px;
+            margin: 24px 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        th, td {
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background: #f2f2f2;
+        }
+
+        .message {
+            padding: 12px;
+            background: #fff3cd;
+        }
+    </style>
+</head>
+<body>
+<h1>Exchange rates result</h1>
+
+<p>Currency: <strong th:text="${currency}"></strong></p>
+
+<div id="message" class="message" hidden></div>
+
+<div class="chart-container">
+    <canvas id="ratesChart"></canvas>
+</div>
+
+<h2>Rates by date</h2>
+<table>
+    <thead>
+    <tr>
+        <th>Date</th>
+        <th>HUF per unit</th>
+    </tr>
+    </thead>
+    <tbody id="ratesTable"></tbody>
+</table>
+
+<a th:href="@{/exercise}">Get another result</a>
+
+<script th:inline="javascript">
+    const xmlText = /*[[${sendOut}]]*/ "";
+    const currency = /*[[${currency}]]*/ "";
+
+    const message = document.getElementById("message");
+    const tableBody = document.getElementById("ratesTable");
+
+    try {
+        const xml = new DOMParser().parseFromString(xmlText, "text/xml");
+
+        if (xml.getElementsByTagName("parsererror").length > 0) {
+            throw new Error("The exchange-rate response could not be read.");
+        }
+
+        const rows = Array.from(xml.getElementsByTagName("Day"))
+            .map(day => {
+                const rateElement = day.getElementsByTagName("Rate")[0];
+
+                if (!rateElement) {
+                    return null;
+                }
+
+                const rate = Number(
+                    rateElement.textContent.trim().replace(",", ".")
+                );
+
+                return {
+                    date: day.getAttribute("date"),
+                    rate: rate
+                };
+            })
+            .filter(row => row && Number.isFinite(row.rate))
+            .sort((a, b) => a.date.localeCompare(b.date));
+
+        if (rows.length === 0) {
+            throw new Error("No rates were returned for that currency and date range.");
+        }
+
+        rows.forEach(row => {
+            const tr = document.createElement("tr");
+            const dateCell = document.createElement("td");
+            const rateCell = document.createElement("td");
+
+            dateCell.textContent = row.date;
+            rateCell.textContent = row.rate.toFixed(4);
+
+            tr.appendChild(dateCell);
+            tr.appendChild(rateCell);
+            tableBody.appendChild(tr);
+        });
+
+        new Chart(document.getElementById("ratesChart"), {
+            type: "line",
+            data: {
+                labels: rows.map(row => row.date),
+                datasets: [{
+                    label: "HUF per " + currency,
+                    data: rows.map(row => row.rate),
+                    borderColor: "#2563eb",
+                    backgroundColor: "rgba(37, 99, 235, 0.15)",
+                    fill: true,
+                    tension: 0.2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        title: {
+                            display: true,
+                            text: "HUF per unit"
+                        }
+                    }
+                }
+            }
+        });
+    } catch (error) {
+        message.hidden = false;
+        message.textContent = error.message;
+    }
+</script>
+</body>
+</html>

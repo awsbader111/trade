@@ -1,4 +1,6 @@
 package com.example.trade;
+import soapclient.MNBArfolyamServiceSoap;
+import soapclient.MNBArfolyamServiceSoapImpl;
 
 import com.oanda.v20.Context;
 import com.oanda.v20.account.AccountSummary;
@@ -235,5 +237,35 @@ public class TradeApplication {
 
         model.addAttribute("tradeId", strOut);
         return "result_close_position";
+    }@GetMapping("/exercise")
+    public String exercise(Model model) {
+        model.addAttribute("param", new MessagePrice());
+        return "form";
     }
+
+    @PostMapping("/exercise")
+    public String exercise2(
+            @ModelAttribute MessagePrice messagePrice,
+            Model model) {
+        try {
+            MNBArfolyamServiceSoapImpl serviceImpl =
+                    new MNBArfolyamServiceSoapImpl();
+
+            MNBArfolyamServiceSoap service =
+                    serviceImpl.getCustomBindingMNBArfolyamServiceSoap();
+
+            String sendOut = service.getExchangeRates(
+                    messagePrice.getStartDate(),
+                    messagePrice.getEndDate(),
+                    messagePrice.getCurrency());
+
+            model.addAttribute("currency", messagePrice.getCurrency());
+            model.addAttribute("sendOut", sendOut);
+
+            return "result";
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 }
