@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Historical prices result</title>
+</head>
+<body>
+<h1>Historical prices result</h1>
+
+<p th:text="'Instrument: ' + ${instr}"></p>
+<p th:text="'Granularity: ' + ${granularity}"></p>
+<p th:text="'Historical prices: ' + ${price}"></p>
+
+<a th:href="@{/hist_prices}">Select another instrument</a>
+</body>
+</html>
