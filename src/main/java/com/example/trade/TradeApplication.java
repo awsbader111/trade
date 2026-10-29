@@ -12,7 +12,7 @@ import com.oanda.v20.pricing.ClientPrice;
 import com.oanda.v20.pricing.PricingGetRequest;
 import com.oanda.v20.pricing.PricingGetResponse;
 import com.oanda.v20.primitives.InstrumentName;
-import com.oanda.v20.trade.Trade;
+import com.oanda.v20.trade.*;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.stereotype.Controller;
@@ -208,5 +208,32 @@ public class TradeApplication {
         }
 
         return null;
+    }
+
+    @GetMapping("/close_position")
+    public String close_position(Model model) {
+        model.addAttribute("param", new MessageClosePosition());
+        return "form_close_position";
+    }
+
+    @PostMapping("/close_position")
+    public String close_position2(
+            @ModelAttribute MessageClosePosition messageClosePosition,
+            Model model) {
+
+        String tradeId = messageClosePosition.getTradeId() + "";
+        String strOut = "Closed tradeId= " + tradeId;
+
+        try {
+            ctx.trade.close(
+                    new TradeCloseRequest(
+                            Config.ACCOUNTID,
+                            new TradeSpecifier(tradeId)));
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        model.addAttribute("tradeId", strOut);
+        return "result_close_position";
     }
 }
