@@ -1,10 +1,13 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
+<link rel="stylesheet" th:href="@{/css/site.css}">
     <meta charset="UTF-8">
     <title>Exchange rates</title>
 </head>
 <body>
+<header th:replace="~{fragments :: header}"></header>
+<main class="content">
 <h1>Get exchange rates</h1>
 
 <form th:action="@{/exercise}" th:object="${param}" method="post">
@@ -30,5 +33,7 @@
 
     <button type="submit">Get rates</button>
 </form>
+</main>
+<footer th:replace="~{fragments :: footer}"></footer>
 </body>
 </html>

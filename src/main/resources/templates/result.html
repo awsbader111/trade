@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
+<link rel="stylesheet" th:href="@{/css/site.css}">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Exchange rates result</title>
@@ -42,6 +43,8 @@
     </style>
 </head>
 <body>
+<header th:replace="~{fragments :: header}"></header>
+<main class="content">
 <h1>Exchange rates result</h1>
 
 <p>Currency: <strong th:text="${currency}"></strong></p>
@@ -147,5 +150,7 @@
         message.textContent = error.message;
     }
 </script>
+</main>
+<footer th:replace="~{fragments :: footer}"></footer>
 </body>
 </html>

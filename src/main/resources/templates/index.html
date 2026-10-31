@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>AtlasFX · Home</title>
+    <link rel="stylesheet" th:href="@{/css/site.css}">
+</head>
+<body>
+<header th:replace="~{fragments :: header}"></header>
+<main class="content">
+    <section class="hero"><h1>Explore global currency markets</h1>
+        <p>Welcome to AtlasFX, our educational currency analytics company. Explore historical exchange rates from the
+            Hungarian National Bank and practice forex workflows using the OANDA demo API.</p>
+        <p><b>Educational demonstration only. No real-money trading.</b></p></section>
+    <section class="cards">
+        <div class="feature-card"><h2>MNB Exchange Rates</h2>
+            <p>Choose a currency and date range, then examine rates in a chart and table.</p><a th:href="@{/exercise}">Explore
+                exchange rates</a></div>
+        <div class="feature-card"><h2>Forex Market Data</h2>
+            <p>View practice-account information, current prices, and the last ten historical prices.</p><a
+                    th:href="@{/actual_prices}">See live quotes</a></div>
+        <div class="feature-card"><h2>Practice Trading</h2>
+            <p>Open, inspect and close simulated positions with the OANDA practice API.</p><a th:href="@{/positions}">View
+                practice positions</a></div>
+    </section>
+</main>
+<footer th:replace="~{fragments :: footer}"></footer>
+</body>
+</html>

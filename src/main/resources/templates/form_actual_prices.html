@@ -1,10 +1,13 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
+<link rel="stylesheet" th:href="@{/css/site.css}">
     <meta charset="UTF-8">
     <title>Select instrument</title>
 </head>
 <body>
+<header th:replace="~{fragments :: header}"></header>
+<main class="content">
 <h1>Select instrument</h1>
 
 <form th:action="@{/actual_prices}" th:object="${par}" method="post">
@@ -17,5 +20,7 @@
 
     <input type="submit" value="Submit">
 </form>
+</main>
+<footer th:replace="~{fragments :: footer}"></footer>
 </body>
 </html>

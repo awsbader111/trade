@@ -1,10 +1,13 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
+<link rel="stylesheet" th:href="@{/css/site.css}">
     <meta charset="UTF-8">
     <title>Historical prices</title>
 </head>
 <body>
+<header th:replace="~{fragments :: header}"></header>
+<main class="content">
 <h1>Select instrument and granularity for historical prices</h1>
 
 <form th:action="@{/hist_prices}" th:object="${param}" method="post">
@@ -25,5 +28,7 @@
 
     <input type="submit" value="Submit">
 </form>
+</main>
+<footer th:replace="~{fragments :: footer}"></footer>
 </body>
 </html>

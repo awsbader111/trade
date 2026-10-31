@@ -1,16 +1,8 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <title>Historical prices result</title>
-</head>
-<body>
-<h1>Historical prices result</h1>
-
-<p th:text="'Instrument: ' + ${instr}"></p>
-<p th:text="'Granularity: ' + ${granularity}"></p>
-<p th:text="'Historical prices: ' + ${price}"></p>
-
-<a th:href="@{/hist_prices}">Select another instrument</a>
-</body>
-</html>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Historical Prices</title><link rel="stylesheet" th:href="@{/css/site.css}"></head>
+<body><header th:replace="~{fragments :: header}"></header><main class="content">
+<h1>Last 10 Historical Prices</h1><p>Instrument: <strong th:text="${instr}"></strong> · Granularity: <strong th:text="${granularity}"></strong></p>
+<p class="alert" th:if="${error}" th:text="${error}"></p>
+<div class="table-wrap" th:if="${candles != null and !#lists.isEmpty(candles)}"><table><thead><tr><th>Time (UTC)</th><th>Mid Close Price</th></tr></thead><tbody><tr th:each="c : ${candles}"><td th:text="${c.time}"></td><td th:text="${c.close}"></td></tr></tbody></table></div>
+<p><a th:href="@{/hist_prices}">Select another instrument</a></p></main><footer th:replace="~{fragments :: footer}"></footer></body></html>

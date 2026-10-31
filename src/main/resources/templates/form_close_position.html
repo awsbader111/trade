@@ -1,14 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<link rel="stylesheet" th:href="@{/css/site.css}">
     <meta charset="UTF-8">
     <title>Title</title>
 </head>
 <body>
+<header th:replace="~{fragments :: header}"></header>
+<main class="content">
 <h1>Enter tradeId for Close position</h1>
 <form action="#" th:action="@{/close_position}" th:object="${param}" method="post">
-    <input type="number" name="size" th:field="*{tradeId}">
+    <input type="number" name="size" min="1" required th:field="*{tradeId}">
     <input type="submit" value="Submit">
 </form>
+</main>
+<footer th:replace="~{fragments :: footer}"></footer>
 </body>
 </html>

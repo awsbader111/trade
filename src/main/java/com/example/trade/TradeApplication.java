@@ -26,28 +26,39 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static com.oanda.v20.instrument.CandlestickGranularity.*;
 
 @SpringBootApplication
 @Controller
 public class TradeApplication {
-    private final Context ctx = new Context(Config.URL, Config.TOKEN);
+    private Context ctx() {
+        if (Config.TOKEN.isBlank() || Config.ACCOUNT_ID.isBlank()) {
+            throw new IllegalStateException("OANDA practice credentials are missing. Configure OANDA_ACCOUNT_ID and OANDA_TOKEN or password.txt.");
+        }
+        return new Context(Config.URL, Config.TOKEN);
+    }
+
+    @GetMapping("/")
+    public String home() { return "index"; }
+
+    @GetMapping("/account_info")
+    public String accountInfo(Model model) {
+        try {
+            model.addAttribute("account", ctx().account.summary(Config.ACCOUNTID).getAccount());
+        } catch (Exception ex) {
+            model.addAttribute("error", "Unable to retrieve OANDA practice account information: " + ex.getMessage());
+        }
+        return "account_info";
+    }
+
 
     public static void main(String[] args) {
         SpringApplication.run(TradeApplication.class, args);
     }
 
-    @GetMapping("/account_info")
-    @ResponseBody
-    public AccountSummary f1() {
-        try {
-            return ctx.account.summary(Config.ACCOUNTID).getAccount();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
+
 
     @GetMapping("/actual_prices")
     public String actual_prices(Model model) {
@@ -60,24 +71,26 @@ public class TradeApplication {
             @ModelAttribute MessageActPrice messageActPrice,
             Model model) {
 
-        String strOut = "";
-        List<String> instruments = new ArrayList<>();
-        instruments.add(messageActPrice.getInstrument());
-
-        try {
-            PricingGetRequest request =
-                    new PricingGetRequest(Config.ACCOUNTID, instruments);
-            PricingGetResponse response = ctx.pricing.get(request);
-
-            for (ClientPrice price : response.getPrices()) {
-                strOut += price + "<br>";
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-
         model.addAttribute("instr", messageActPrice.getInstrument());
-        model.addAttribute("price", strOut);
+        try {
+            List<String> instruments = List.of(messageActPrice.getInstrument());
+            PricingGetResponse response = ctx().pricing.get(
+                    new PricingGetRequest(Config.ACCOUNTID, instruments));
+            List<Map<String, String>> quotes = new ArrayList<>();
+            for (ClientPrice price : response.getPrices()) {
+                String bid = price.getBids() == null || price.getBids().isEmpty()
+                        ? "Unavailable" : String.valueOf(price.getBids().get(0).getPrice());
+                String ask = price.getAsks() == null || price.getAsks().isEmpty()
+                        ? "Unavailable" : String.valueOf(price.getAsks().get(0).getPrice());
+                quotes.add(Map.of("time", String.valueOf(price.getTime()),
+                        "bid", bid, "ask", ask,
+                        "instrument", String.valueOf(price.getInstrument())));
+            }
+            model.addAttribute("quotes", quotes);
+            if (quotes.isEmpty()) model.addAttribute("error", "No quotes returned for this instrument.");
+        } catch (Exception e) {
+            model.addAttribute("error", "Unable to retrieve actual prices: " + e.getMessage());
+        }
         return "result_actual_prices";
     }
 
@@ -92,51 +105,33 @@ public class TradeApplication {
             @ModelAttribute MessageHistPrice messageHistPrice,
             Model model) {
 
-        String strOut;
-
-        try {
-            InstrumentCandlesRequest request =
-                    new InstrumentCandlesRequest(
-                            new InstrumentName(messageHistPrice.getInstrument()));
-
-            switch (messageHistPrice.getGranularity()) {
-                case "M1":
-                    request.setGranularity(M1);
-                    break;
-                case "H1":
-                    request.setGranularity(H1);
-                    break;
-                case "D":
-                    request.setGranularity(D);
-                    break;
-                case "W":
-                    request.setGranularity(W);
-                    break;
-                case "M":
-                    request.setGranularity(M);
-                    break;
-                default:
-                    throw new IllegalArgumentException("Invalid granularity");
-            }
-
-            request.setCount(Long.valueOf(10));
-            InstrumentCandlesResponse response =
-                    ctx.instrument.candles(request);
-
-            strOut = "";
-            for (Candlestick candle : response.getCandles()) {
-                strOut += candle.getTime()
-                        + "\t"
-                        + candle.getMid().getC()
-                        + ";";
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-
         model.addAttribute("instr", messageHistPrice.getInstrument());
         model.addAttribute("granularity", messageHistPrice.getGranularity());
-        model.addAttribute("price", strOut);
+        try {
+            InstrumentCandlesRequest request = new InstrumentCandlesRequest(
+                    new InstrumentName(messageHistPrice.getInstrument()));
+            switch (messageHistPrice.getGranularity()) {
+                case "M1": request.setGranularity(M1); break;
+                case "H1": request.setGranularity(H1); break;
+                case "D": request.setGranularity(D); break;
+                case "W": request.setGranularity(W); break;
+                case "M": request.setGranularity(M); break;
+                default: throw new IllegalArgumentException("Invalid granularity");
+            }
+            request.setCount(10L);
+            InstrumentCandlesResponse response = ctx().instrument.candles(request);
+            List<Map<String, String>> candles = new ArrayList<>();
+            for (Candlestick candle : response.getCandles()) {
+                if (candle.getMid() != null) {
+                    candles.add(Map.of("time", String.valueOf(candle.getTime()),
+                            "close", String.valueOf(candle.getMid().getC())));
+                }
+            }
+            model.addAttribute("candles", candles);
+            if (candles.isEmpty()) model.addAttribute("error", "No historical prices returned.");
+        } catch (Exception e) {
+            model.addAttribute("error", "Unable to retrieve historical prices: " + e.getMessage());
+        }
         return "result_hist_prices";
     }
 
@@ -151,65 +146,36 @@ public class TradeApplication {
             @ModelAttribute MessageOpenPosition messageOpenPosition,
             Model model) {
 
-        String strOut;
-
-        try {
-            InstrumentName instrument =
-                    new InstrumentName(messageOpenPosition.getInstrument());
-
-            OrderCreateRequest request =
-                    new OrderCreateRequest(Config.ACCOUNTID);
-
-            MarketOrderRequest marketOrderRequest =
-                    new MarketOrderRequest();
-            marketOrderRequest.setInstrument(instrument);
-            marketOrderRequest.setUnits(messageOpenPosition.getUnits());
-
-            request.setOrder(marketOrderRequest);
-
-            OrderCreateResponse response = ctx.order.create(request);
-            strOut = "tradeId: "
-                    + response.getOrderFillTransaction().getId();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-
         model.addAttribute("instr", messageOpenPosition.getInstrument());
         model.addAttribute("units", messageOpenPosition.getUnits());
-        model.addAttribute("id", strOut);
+        if (messageOpenPosition.getUnits() == 0) {
+            model.addAttribute("error", "Units must not be zero.");
+            return "result_open_position";
+        }
+        try {
+            InstrumentName instrument = new InstrumentName(messageOpenPosition.getInstrument());
+            OrderCreateRequest request = new OrderCreateRequest(Config.ACCOUNTID);
+            MarketOrderRequest marketOrderRequest = new MarketOrderRequest();
+            marketOrderRequest.setInstrument(instrument);
+            marketOrderRequest.setUnits(messageOpenPosition.getUnits());
+            request.setOrder(marketOrderRequest);
+            OrderCreateResponse response = ctx().order.create(request);
+            model.addAttribute("id", "Order fill transaction ID: "
+                    + response.getOrderFillTransaction().getId());
+        } catch (Exception e) {
+            model.addAttribute("error", "Could not open practice trade: " + e.getMessage());
+        }
         return "result_open_position";
     }
 
     @GetMapping("/positions")
-    @ResponseBody
-    public String positions() {
-        String strOut = "Open positions:<br>";
-
+    public String positions(Model model) {
         try {
-            List<Trade> trades =
-                    ctx.trade.listOpen(Config.ACCOUNTID).getTrades();
-
-            for (Trade trade : trades) {
-                strOut += trade.getId()
-                        + ", "
-                        + trade.getInstrument()
-                        + ", "
-                        + trade.getOpenTime()
-                        + ", "
-                        + trade.getCurrentUnits()
-                        + ", "
-                        + trade.getPrice()
-                        + ", "
-                        + trade.getUnrealizedPL()
-                        + "<br>";
-            }
-
-            return strOut;
-        } catch (Exception e) {
-            e.printStackTrace();
+            model.addAttribute("trades", ctx().trade.listOpen(Config.ACCOUNTID).getTrades());
+        } catch (Exception ex) {
+            model.addAttribute("error", "Unable to retrieve open positions: " + ex.getMessage());
         }
-
-        return null;
+        return "positions";
     }
 
     @GetMapping("/close_position")
@@ -223,21 +189,23 @@ public class TradeApplication {
             @ModelAttribute MessageClosePosition messageClosePosition,
             Model model) {
 
-        String tradeId = messageClosePosition.getTradeId() + "";
-        String strOut = "Closed tradeId= " + tradeId;
-
-        try {
-            ctx.trade.close(
-                    new TradeCloseRequest(
-                            Config.ACCOUNTID,
-                            new TradeSpecifier(tradeId)));
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        String tradeId = String.valueOf(messageClosePosition.getTradeId());
+        if (messageClosePosition.getTradeId() <= 0) {
+            model.addAttribute("error", "Enter a positive Trade ID from Open Positions; 0 is not valid.");
+            return "result_close_position";
         }
-
-        model.addAttribute("tradeId", strOut);
+        try {
+            ctx().trade.close(new TradeCloseRequest(
+                    Config.ACCOUNTID, new TradeSpecifier(tradeId)));
+            model.addAttribute("tradeId", "Closed trade ID: " + tradeId);
+        } catch (Exception e) {
+            model.addAttribute("error", "Unable to close trade " + tradeId
+                    + ". Check Open Positions and market availability. Details: " + e.getMessage());
+        }
         return "result_close_position";
-    }@GetMapping("/exercise")
+    }
+
+    @GetMapping("/exercise")
     public String exercise(Model model) {
         model.addAttribute("param", new MessagePrice());
         return "form";

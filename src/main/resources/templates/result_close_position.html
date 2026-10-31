@@ -1,12 +1,18 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Close Practice Trade</title>
+    <link rel="stylesheet" th:href="@{/css/site.css}">
 </head>
 <body>
-<h1>Closed position</h1>
-<p th:text="${tradeId}" />
-<a th:href="@{'/close_position'}">Close another position</a>
+<header th:replace="~{fragments :: header}"></header>
+<main class="content"><h1>Close Practice Trade</h1>
+    <p class="alert" th:if="${error}" th:text="${error}"></p>
+    <p th:if="${tradeId}" th:text="${tradeId}"></p>
+    <p><a th:href="@{/positions}">View Open Positions</a></p>
+    <p><a th:href="@{/close_position}">Return to Close Trade</a></p></main>
+<footer th:replace="~{fragments :: footer}"></footer>
 </body>
 </html>

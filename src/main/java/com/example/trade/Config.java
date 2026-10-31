@@ -15,8 +15,9 @@ public class Config {
     private static final Properties CREDENTIALS = loadCredentials();
 
     public static final String URL = "https://api-fxpractice.oanda.com";
+    public static final String ACCOUNT_ID = requiredCredential("ACCOUNT_ID");
     public static final AccountID ACCOUNTID =
-            new AccountID(requiredCredential("ACCOUNT_ID"));
+            new AccountID(ACCOUNT_ID);
     public static final String TOKEN = requiredCredential("TOKEN");
 
     private static Properties loadCredentials() {
@@ -24,8 +25,7 @@ public class Config {
         Path credentialsFile = Path.of("password.txt");
 
         if (!Files.exists(credentialsFile)) {
-            throw new IllegalStateException(
-                    "password.txt was not found in the project directory");
+            return properties;
         }
 
         try (InputStream input = Files.newInputStream(credentialsFile)) {
@@ -37,13 +37,10 @@ public class Config {
     }
 
     private static String requiredCredential(String name) {
-        String value = CREDENTIALS.getProperty(name);
-
-        if (value == null || value.isBlank()) {
-            throw new IllegalStateException(
-                    "Set " + name + " in password.txt");
-        }
-
+        String environmentName = name.equals("ACCOUNT_ID") ? "OANDA_ACCOUNT_ID" : "OANDA_TOKEN";
+        String fromEnvironment = System.getenv(environmentName);
+        String value = (fromEnvironment != null && !fromEnvironment.isBlank())
+                ? fromEnvironment : CREDENTIALS.getProperty(name, "");
         return value.trim();
     }
 }

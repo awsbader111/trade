@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Open Positions</title>
+    <link rel="stylesheet" th:href="@{/css/site.css}">
+</head>
+<body>
+<header th:replace="~{fragments :: header}"></header>
+<main class="content"><h1>Open Forex Positions</h1>
+    <p class="alert" th:if="${error}" th:text="${error}"></p>
+    <p th:if="${trades != null and #lists.isEmpty(trades)}">No open positions in the practice account.</p>
+    <div class="table-wrap" th:if="${trades != null and !#lists.isEmpty(trades)}">
+        <table>
+            <thead>
+            <tr>
+                <th>Trade ID</th>
+                <th>Instrument</th>
+                <th>Open Time</th>
+                <th>Units</th>
+                <th>Open Price</th>
+                <th>Unrealized P/L</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="trade : ${trades}">
+                <td th:text="${trade.id}"></td>
+                <td th:text="${trade.instrument}"></td>
+                <td th:text="${trade.openTime}"></td>
+                <td th:text="${trade.currentUnits}"></td>
+                <td th:text="${trade.price}"></td>
+                <td th:text="${trade.unrealizedPL}"></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <p><a th:href="@{/close_position}">Close a position</a></p></main>
+<footer th:replace="~{fragments :: footer}"></footer>
+</body>
+</html>

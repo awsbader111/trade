@@ -1,18 +1,24 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
+<link rel="stylesheet" th:href="@{/css/site.css}">
     <meta charset="UTF-8">
     <title>Position opened</title>
 </head>
 <body>
+<header th:replace="~{fragments :: header}"></header>
+<main class="content">
 <h1>Position opened</h1>
 
 <p th:text="'Instrument: ' + ${instr}"></p>
 <p th:text="'Units: ' + ${units}"></p>
-<p th:text="${id}"></p>
+<p class="alert" th:if="${error}" th:text="${error}"></p>
+<p th:if="${id}" th:text="${id}"></p>
 
 <a th:href="@{/open_position}">Open another position</a>
 <br>
 <a th:href="@{/positions}">View open positions</a>
+</main>
+<footer th:replace="~{fragments :: footer}"></footer>
 </body>
 </html>

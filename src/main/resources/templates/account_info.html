@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Forex Account</title>
+    <link rel="stylesheet" th:href="@{/css/site.css}">
+</head>
+<body>
+<header th:replace="~{fragments :: header}"></header>
+<main class="content"><h1>Forex Practice Account</h1>
+    <p class="alert" th:if="${error}" th:text="${error}"></p>
+    <div class="table-wrap" th:if="${account != null}">
+        <table>
+            <tbody>
+            <tr>
+                <th>Account ID</th>
+                <td th:text="${account.id}"></td>
+            </tr>
+            <tr>
+                <th>Alias</th>
+                <td th:text="${account.alias}"></td>
+            </tr>
+            <tr>
+                <th>Currency</th>
+                <td th:text="${account.currency}"></td>
+            </tr>
+            <tr>
+                <th>Balance</th>
+                <td th:text="${account.balance}"></td>
+            </tr>
+            <tr>
+                <th>Net Asset Value</th>
+                <td th:text="${account.NAV}"></td>
+            </tr>
+            <tr>
+                <th>Open Trades</th>
+                <td th:text="${account.openTradeCount}"></td>
+            </tr>
+            <tr>
+                <th>Unrealized P/L</th>
+                <td th:text="${account.unrealizedPL}"></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</main>
+<footer th:replace="~{fragments :: footer}"></footer>
+</body>
+</html>

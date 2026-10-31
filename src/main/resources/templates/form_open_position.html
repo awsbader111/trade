@@ -1,10 +1,13 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
+<link rel="stylesheet" th:href="@{/css/site.css}">
     <meta charset="UTF-8">
     <title>Open position</title>
 </head>
 <body>
+<header th:replace="~{fragments :: header}"></header>
+<main class="content">
 <h1>Select instrument and size for an open position</h1>
 
 <form th:action="@{/open_position}" th:object="${param}" method="post">
@@ -25,5 +28,7 @@
 </form>
 
 <p>Positive units open a long position; negative units open a short position.</p>
+</main>
+<footer th:replace="~{fragments :: footer}"></footer>
 </body>
 </html>
