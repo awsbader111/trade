@@ -8,7 +8,9 @@
 <body>
 <header th:replace="~{fragments :: header}"></header>
 <main class="content">
-<h1>Position opened</h1>
+    <h1 th:text="${error != null} ? 'Trade not opened' : 'Position opened'">
+        Trade result
+    </h1>
 
 <p th:text="'Instrument: ' + ${instr}"></p>
 <p th:text="'Units: ' + ${units}"></p>

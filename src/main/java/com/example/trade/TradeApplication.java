@@ -141,6 +141,7 @@ public class TradeApplication {
         return "form_open_position";
     }
 
+
     @PostMapping("/open_position")
     public String open_position2(
             @ModelAttribute MessageOpenPosition messageOpenPosition,
@@ -148,25 +149,58 @@ public class TradeApplication {
 
         model.addAttribute("instr", messageOpenPosition.getInstrument());
         model.addAttribute("units", messageOpenPosition.getUnits());
+
         if (messageOpenPosition.getUnits() == 0) {
             model.addAttribute("error", "Units must not be zero.");
             return "result_open_position";
         }
+
         try {
-            InstrumentName instrument = new InstrumentName(messageOpenPosition.getInstrument());
-            OrderCreateRequest request = new OrderCreateRequest(Config.ACCOUNTID);
+            InstrumentName instrument =
+                    new InstrumentName(messageOpenPosition.getInstrument());
+
+            OrderCreateRequest request =
+                    new OrderCreateRequest(Config.ACCOUNTID);
+
             MarketOrderRequest marketOrderRequest = new MarketOrderRequest();
             marketOrderRequest.setInstrument(instrument);
             marketOrderRequest.setUnits(messageOpenPosition.getUnits());
+
             request.setOrder(marketOrderRequest);
+
             OrderCreateResponse response = ctx().order.create(request);
-            model.addAttribute("id", "Order fill transaction ID: "
-                    + response.getOrderFillTransaction().getId());
+
+            if (response.getOrderFillTransaction() != null) {
+
+                model.addAttribute("id",
+                        "Order filled successfully! Transaction ID: "
+                                + response.getOrderFillTransaction().getId());
+
+            } else if (response.getOrderCancelTransaction() != null) {
+
+                model.addAttribute("error",
+                        "Order cancelled by OANDA. Reason: "
+                                + response.getOrderCancelTransaction().getReason());
+
+            } else {
+
+                model.addAttribute("error",
+                        "Order was not immediately filled. "
+                                + "Check your OANDA account and order history.");
+            }
+
         } catch (Exception e) {
-            model.addAttribute("error", "Could not open practice trade: " + e.getMessage());
+
+            model.addAttribute("error",
+                    "Could not open practice trade: "
+                            + (e.getMessage() != null
+                            ? e.getMessage()
+                            : e.getClass().getSimpleName()));
         }
+
         return "result_open_position";
     }
+
 
     @GetMapping("/positions")
     public String positions(Model model) {
