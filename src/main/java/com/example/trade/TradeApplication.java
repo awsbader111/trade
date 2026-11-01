@@ -218,26 +218,60 @@ public class TradeApplication {
         return "form_close_position";
     }
 
+
     @PostMapping("/close_position")
     public String close_position2(
             @ModelAttribute MessageClosePosition messageClosePosition,
             Model model) {
 
         String tradeId = String.valueOf(messageClosePosition.getTradeId());
+
         if (messageClosePosition.getTradeId() <= 0) {
-            model.addAttribute("error", "Enter a positive Trade ID from Open Positions; 0 is not valid.");
+            model.addAttribute("error", "Please enter a valid positive Trade ID.");
             return "result_close_position";
         }
+
         try {
-            ctx().trade.close(new TradeCloseRequest(
-                    Config.ACCOUNTID, new TradeSpecifier(tradeId)));
-            model.addAttribute("tradeId", "Closed trade ID: " + tradeId);
+            Context context = ctx();
+
+            List<Trade> openTrades =
+                    context.trade.listOpen(Config.ACCOUNTID).getTrades();
+
+            boolean tradeExists = false;
+
+            for (Trade trade : openTrades) {
+                if (trade.getId().toString().equals(tradeId)) {
+                    tradeExists = true;
+                    break;
+                }
+            }
+
+            if (!tradeExists) {
+                model.addAttribute("error",
+                        "Trade ID " + tradeId
+                                + " does not exist among your open positions.");
+                return "result_close_position";
+            }
+
+            context.trade.close(
+                    new TradeCloseRequest(
+                            Config.ACCOUNTID,
+                            new TradeSpecifier(tradeId)
+                    )
+            );
+
+            model.addAttribute("tradeId",
+                    "Successfully closed trade ID: " + tradeId);
+
         } catch (Exception e) {
-            model.addAttribute("error", "Unable to close trade " + tradeId
-                    + ". Check Open Positions and market availability. Details: " + e.getMessage());
+            model.addAttribute("error",
+                    "Unable to close trade. Check market availability "
+                            + "and your OANDA practice account.");
         }
+
         return "result_close_position";
     }
+
 
     @GetMapping("/exercise")
     public String exercise(Model model) {
