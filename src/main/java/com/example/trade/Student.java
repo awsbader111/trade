@@ -6,39 +6,34 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
+/**
+ * Student record from the professor's 04-Class record/students.txt dataset.
+ */
 @Entity
 @Table(name = "students")
 public class Student {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     @NotBlank
-    @Size(max = 70)
-    @Column(nullable = false, length = 70)
-    private String firstName;
+    @Size(max = 120)
+    @Column(name = "sname", nullable = false, length = 120)
+    private String sname;
+
+    // 'class' is a Java keyword; quote the physical SQL column name to keep the original schema.
     @NotBlank
-    @Size(max = 70)
-    @Column(nullable = false, length = 70)
-    private String lastName;
-    @NotBlank
-    @Email
-    @Size(max = 160)
-    @Column(nullable = false, length = 160)
-    private String email;
-    @NotBlank
-    @Size(max = 80)
-    @Column(nullable = false, length = 80)
-    private String program;
-    @Min(0)
-    @Max(300)
-    @Column(nullable = false)
-    private int credits;
+    @Size(max = 20)
+    @Column(name = "\"class\"", nullable = false, length = 20)
+    private String studentClass;
+
+    @NotNull
+    @Column(name = "boy", nullable = false)
+    private Boolean boy;
 
     public Long getId() {
         return id;
@@ -48,43 +43,27 @@ public class Student {
         this.id = id;
     }
 
-    public String getFirstName() {
-        return firstName;
+    public String getSname() {
+        return sname;
     }
 
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
+    public void setSname(String sname) {
+        this.sname = sname;
     }
 
-    public String getLastName() {
-        return lastName;
+    public String getStudentClass() {
+        return studentClass;
     }
 
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
+    public void setStudentClass(String studentClass) {
+        this.studentClass = studentClass;
     }
 
-    public String getEmail() {
-        return email;
+    public Boolean getBoy() {
+        return boy;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getProgram() {
-        return program;
-    }
-
-    public void setProgram(String program) {
-        this.program = program;
-    }
-
-    public int getCredits() {
-        return credits;
-    }
-
-    public void setCredits(int credits) {
-        this.credits = credits;
+    public void setBoy(Boolean boy) {
+        this.boy = boy;
     }
 }

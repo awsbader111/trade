@@ -24,30 +24,28 @@ public class StudentRestController {
 
     @GetMapping("/{id}")
     public Student one(@PathVariable Long id) {
-        return students.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found"));
+        return students.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found"));
     }
 
     @PostMapping
     public ResponseEntity<Student> create(@Valid @RequestBody Student student) {
-        student.setId(null); // no client-controlled ID on creation
+        student.setId(null);
         return ResponseEntity.status(HttpStatus.CREATED).body(students.save(student));
     }
 
     @PutMapping("/{id}")
     public Student update(@PathVariable Long id, @Valid @RequestBody Student incoming) {
-        Student current = one(id);
-        current.setFirstName(incoming.getFirstName());
-        current.setLastName(incoming.getLastName());
-        current.setEmail(incoming.getEmail());
-        current.setProgram(incoming.getProgram());
-        current.setCredits(incoming.getCredits());
-        return students.save(current);
+        Student existing = one(id);
+        existing.setSname(incoming.getSname());
+        existing.setStudentClass(incoming.getStudentClass());
+        existing.setBoy(incoming.getBoy());
+        return students.save(existing);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
-        Student current = one(id);
-        students.delete(current);
+        students.delete(one(id));
         return ResponseEntity.noContent().build();
     }
 }

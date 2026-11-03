@@ -8,7 +8,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
-import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -19,18 +18,25 @@ class StudentRestControllerTest {
     @Autowired
     MockMvc mvc;
     private static final String STUDENT = """
-            {"firstName":"Anna","lastName":"Smith","email":"anna@example.com","program":"Computer Science","credits":45}
+            {"sname":"Anna Smith","studentClass":"12/B","boy":false}
             """;
 
     @Test
     void createReadUpdateDelete() throws Exception {
-        String location = mvc.perform(post("/api/students").contentType(MediaType.APPLICATION_JSON).content(STUDENT))
-                .andExpect(status().isCreated()).andExpect(jsonPath("$.firstName").value("Anna"))
+        String created = mvc.perform(post("/api/students")
+                        .contentType(MediaType.APPLICATION_JSON).content(STUDENT))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.sname").value("Anna Smith"))
                 .andReturn().getResponse().getContentAsString();
-        long id = new tools.jackson.databind.ObjectMapper().readTree(location).get("id").asLong();
-        mvc.perform(get("/api/students/" + id)).andExpect(status().isOk()).andExpect(jsonPath("$.credits").value(45));
+
+        long id = new tools.jackson.databind.ObjectMapper().readTree(created).get("id").asLong();
+        mvc.perform(get("/api/students/" + id))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.studentClass").value("12/B"));
         mvc.perform(put("/api/students/" + id).contentType(MediaType.APPLICATION_JSON)
-                .content(STUDENT.replace("45", "55"))).andExpect(status().isOk()).andExpect(jsonPath("$.credits").value(55));
+                        .content(STUDENT.replace("12/B", "12/A")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.studentClass").value("12/A"));
         mvc.perform(delete("/api/students/" + id)).andExpect(status().isNoContent());
         mvc.perform(get("/api/students/" + id)).andExpect(status().isNotFound());
     }
@@ -38,7 +44,7 @@ class StudentRestControllerTest {
     @Test
     void invalidInputRejected() throws Exception {
         mvc.perform(post("/api/students").contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"firstName\":\"\",\"lastName\":\"A\",\"email\":\"bad\",\"program\":\"IT\",\"credits\":-1}"))
+                        .content("{\"sname\":\"\",\"studentClass\":\"12/A\",\"boy\":null}"))
                 .andExpect(status().isBadRequest());
     }
 }
