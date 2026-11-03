@@ -1,4 +1,5 @@
 package com.example.trade;
+
 import soapclient.MNBArfolyamServiceSoap;
 import soapclient.MNBArfolyamServiceSoapImpl;
 
@@ -41,7 +42,9 @@ public class TradeApplication {
     }
 
     @GetMapping("/")
-    public String home() { return "index"; }
+    public String home() {
+        return "index";
+    }
 
     @GetMapping("/account_info")
     public String accountInfo(Model model) {
@@ -55,9 +58,17 @@ public class TradeApplication {
 
 
     public static void main(String[] args) {
+        // The homework specification requires an H2 file database in C:\data on Windows.
+        // Create that directory before the DataSource is initialized.
+        if (System.getProperty("os.name", "").toLowerCase().contains("win")) {
+            try {
+                java.nio.file.Files.createDirectories(java.nio.file.Path.of("C:/data"));
+            } catch (java.io.IOException e) {
+                throw new IllegalStateException("Cannot create C:/data", e);
+            }
+        }
         SpringApplication.run(TradeApplication.class, args);
     }
-
 
 
     @GetMapping("/actual_prices")
@@ -111,12 +122,23 @@ public class TradeApplication {
             InstrumentCandlesRequest request = new InstrumentCandlesRequest(
                     new InstrumentName(messageHistPrice.getInstrument()));
             switch (messageHistPrice.getGranularity()) {
-                case "M1": request.setGranularity(M1); break;
-                case "H1": request.setGranularity(H1); break;
-                case "D": request.setGranularity(D); break;
-                case "W": request.setGranularity(W); break;
-                case "M": request.setGranularity(M); break;
-                default: throw new IllegalArgumentException("Invalid granularity");
+                case "M1":
+                    request.setGranularity(M1);
+                    break;
+                case "H1":
+                    request.setGranularity(H1);
+                    break;
+                case "D":
+                    request.setGranularity(D);
+                    break;
+                case "W":
+                    request.setGranularity(W);
+                    break;
+                case "M":
+                    request.setGranularity(M);
+                    break;
+                default:
+                    throw new IllegalArgumentException("Invalid granularity");
             }
             request.setCount(10L);
             InstrumentCandlesResponse response = ctx().instrument.candles(request);

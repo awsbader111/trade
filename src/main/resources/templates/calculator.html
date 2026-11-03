@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Calculator Test · AtlasFX</title>
+    <link rel="stylesheet" th:href="@{/css/site.css}">
+</head>
+<body>
+<header th:replace="~{fragments :: header}"></header>
+<main class="content">
+    <h1>Calculator — Test Menu</h1>
+    <p>This four-operation calculator has automated JUnit and MockMvc tests.</p>
+    <section class="result-panel" th:if="${result != null}"><h2>Calculation result</h2>
+        <p><span th:text="${calcForm.a}"></span> <span th:text="${symbol}"></span> <span th:text="${calcForm.b}"></span>
+            = <strong th:text="${result}"></strong></p></section>
+    <p class="alert" role="alert" th:if="${error != null}" th:text="${error}"></p>
+    <form method="post" th:action="@{/test}" th:object="${calcForm}">
+        <label for="a">First number</label><input id="a" type="number" step="1" required th:field="*{a}">
+        <label for="b">Second number</label><input id="b" type="number" step="1" required th:field="*{b}">
+        <label for="op">Operation</label><select id="op" th:field="*{op}">
+        <option value="add">Addition (+)</option>
+        <option value="sub">Subtraction (−)</option>
+        <option value="mul">Multiplication (×)</option>
+        <option value="divide">Division (÷)</option>
+    </select>
+        <button type="submit">Calculate</button>
+    </form>
+    <p class="hint">Example: divide 5 by 2 → 2.50. Division by zero displays a validation message.</p>
+</main>
+<footer th:replace="~{fragments :: footer}"></footer>
+</body>
+</html>
