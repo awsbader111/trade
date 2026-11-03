@@ -33,3 +33,12 @@ build/
 .vscode/
 password.txt
 
+
+# React build dependencies and local tools
+frontend/node_modules/
+frontend/.env
+frontend/.env.*
+!frontend/.env.example
+# Local H2 databases
+*.mv.db
+*.trace.db
